@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0F0F13">
+<title>MoodSync</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0F0F13; color: #F0EEF8;
+  min-height: 100vh; max-width: 480px; margin: 0 auto;
+}
+.screen { display: none; flex-direction: column; min-height: 100vh; padding: 32px 20px 40px; }
+.screen.active { display: flex; }
+
+#splash { align-items: center; justify-content: center; gap: 20px; text-align: center; }
+.logo { font-size: 64px; }
+h1 { font-size: 36px; font-weight: 700; }
+.sub { color: #7A788A; font-size: 15px; line-height: 1.6; max-width: 280px; }
+.features { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.feat { display: flex; align-items: center; gap: 12px; background: #1A1A24; border-radius: 12px; padding: 14px; font-size: 14px; color: #9D9BB0; }
+.feat span:first-child { font-size: 22px; }
+
+.btn { width: 100%; padding: 16px; border: none; border-radius: 50px; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+.btn:active { opacity: 0.8; }
+.btn-purple { background: #7C3AED; color: white; }
+.btn-green  { background: #1DB954; color: white; }
+.btn-amber  { background: #D97706; color: white; }
+.btn-ghost  { background: #1A1A24; color: #9D9BB0; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+
+#checkin { gap: 0; }
+.prog { display: flex; gap: 4px; margin-bottom: 28px; }
+.prog-dot { flex: 1; height: 4px; border-radius: 2px; background: #1A1A24; transition: background .3s; }
+.prog-dot.on { background: #7C3AED; }
+.q-card { background: #1A1A24; border-radius: 20px; padding: 24px; margin-bottom: 20px; }
+.q-num { font-size: 12px; color: #7A788A; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.4; margin-bottom: 24px; }
+.scale { display: flex; gap: 8px; }
+.scale-btn { flex: 1; aspect-ratio: 1; background: #232333; border: 2px solid transparent; border-radius: 12px; color: #F0EEF8; font-size: 16px; font-weight: 600; cursor: pointer; transition: all .15s; }
+.scale-btn.sel { background: #7C3AED; border-color: #7C3AED; }
+.scale-labels { display: flex; justify-content: space-between; margin-top: 8px; }
+.scale-labels span { font-size: 11px; color: #7A788A; }
+.emo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.emo-btn { background: #232333; border: 2px solid transparent; border-radius: 12px; padding: 14px 10px; cursor: pointer; color: #F0EEF8; display: flex; align-items: center; gap: 10px; font-size: 15px; transition: all .15s; }
+.emo-btn .ei { font-size: 24px; }
+.emo-btn.sel { background: #3B1FA8; border-color: #7C3AED; }
+.nav { display: flex; gap: 10px; margin-top: auto; padding-top: 16px; }
+.nav .btn { flex: 1; padding: 14px; font-size: 15px; }
+
+#result { gap: 0; padding-top: 24px; }
+.hero { border-radius: 24px; padding: 28px; margin-bottom: 20px; color: white; }
+.hero-tag { font-size: 12px; background: rgba(255,255,255,.2); display: inline-block; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; }
+.hero-emoji { font-size: 56px; display: block; margin-bottom: 8px; }
+.hero-name { font-size: 32px; font-weight: 700; margin-bottom: 6px; }
+.hero-aff { font-size: 14px; opacity: .85; line-height: 1.6; }
+.sec-label { font-size: 11px; color: #7A788A; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; }
+.cards2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.card { background: #1A1A24; border-radius: 16px; padding: 16px; }
+.card-icon { font-size: 24px; margin-bottom: 8px; }
+.card-lbl { font-size: 11px; color: #7A788A; margin-bottom: 4px; }
+.card-val { font-size: 14px; font-weight: 500; line-height: 1.4; }
+.card-sub { font-size: 11px; color: #7A788A; margin-top: 4px; }
+.agenda-card { background: #1A1A24; border-radius: 16px; padding: 16px; }
+.agenda-tip { font-size: 14px; font-style: italic; color: #C4C0D8; line-height: 1.6; padding-bottom: 12px; border-bottom: 1px solid #232333; margin-bottom: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: #232333; border-radius: 20px; padding: 5px 12px; font-size: 12px; color: #9D9BB0; }
+.breaks { font-size: 12px; color: #7A788A; margin-top: 10px; }
+.actions { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+
+.spotify-bar { background: #1A1A24; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #9D9BB0; margin-bottom: 4px; }
+.spotify-dot { width: 8px; height: 8px; border-radius: 50%; background: #1DB954; }
+.spotify-dot.off { background: #7A788A; }
+
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(100px); background: #232333; border-radius: 12px; padding: 10px 20px; font-size: 14px; white-space: nowrap; transition: transform .3s; z-index: 99; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="screen active" id="splash">
+  <div class="logo">🌈</div>
+  <div>
+    <h1>MoodSync</h1>
+    <p class="sub" style="margin:8px auto 0">Seu humor sincroniza sua música, luz e agenda.</p>
+  </div>
+  <div class="features">
+    <div class="feat"><span>🎵</span><span>Playlist certa para seu estado emocional</span></div>
+    <div class="feat"><span>💡</span><span>Iluminação automática pelo humor</span></div>
+    <div class="feat"><span>📅</span><span>Agenda reordenada pela sua energia</span></div>
+  </div>
+  <div id="spotifyStatus" class="spotify-bar">
+    <div class="spotify-dot off" id="spotifyDot"></div>
+    <span id="spotifyLabel">Spotify não conectado</span>
+  </div>
+  <button class="btn btn-green" onclick="conectarSpotify()" id="btnSpotify">🎵 Conectar Spotify</button>
+  <button class="btn btn-purple" onclick="startCheckin()">Como estou agora? →</button>
+  <p style="color:#7A788A;font-size:12px;text-align:center">30 segundos · 6 perguntas</p>
+</div>
+
+<!-- CHECK-IN -->
+<div class="screen" id="checkin">
+  <div class="prog" id="prog"></div>
+  <div id="qWrap"></div>
+  <div class="nav">
+    <button class="btn btn-ghost" id="btnBack" onclick="prevQ()">← Voltar</button>
+    <button class="btn btn-purple" id="btnNext" onclick="nextQ()" disabled>Próximo →</button>
+  </div>
+</div>
+
+<!-- RESULTADO -->
+<div class="screen" id="result">
+  <div id="resultBody"></div>
+  <div class="actions">
+    <button class="btn btn-green" id="btnPlay" onclick="ativarSpotify()">🎵 Ativar playlist no Spotify</button>
+    <button class="btn btn-amber" onclick="showToast('💡 Iluminação sincronizada!')">💡 Sincronizar luz</button>
+    <button class="btn btn-ghost" onclick="go('splash')">← Novo check-in</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Pega token do Spotify da URL (vem após o /callback do backend) ──
+const params = new URLSearchParams(window.location.search);
+let spotifyToken = params.get('token') || localStorage.getItem('spotify_token') || null;
+let moodAtual = null;
+
+if (spotifyToken) {
+  localStorage.setItem('spotify_token', spotifyToken);
+  window.history.replaceState({}, '', '/'); // limpa URL
+}
+
+function atualizarStatusSpotify() {
+  const dot   = document.getElementById('spotifyDot');
+  const label = document.getElementById('spotifyLabel');
+  const btn   = document.getElementById('btnSpotify');
+  if (spotifyToken) {
+    dot.classList.remove('off');
+    label.textContent = 'Spotify conectado ✓';
+    btn.textContent   = '🎵 Reconectar Spotify';
+    btn.style.opacity = '0.5';
+  }
+}
+atualizarStatusSpotify();
+
+function conectarSpotify() {
+  window.location.href = '/login';
+}
+
+async function ativarSpotify() {
+  const btn = document.getElementById('btnPlay');
+  if (!spotifyToken) {
+    showToast('⚠️ Conecte o Spotify primeiro!');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Ativando...';
+  try {
+    const res = await fetch('/api/play', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mood: moodAtual, token: spotifyToken }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('🎵 Playlist ativada no Spotify!');
+      btn.textContent = '✓ Tocando agora';
+    } else {
+      showToast('❌ Erro: ' + (data.error || 'tente novamente'));
+      btn.disabled = false;
+      btn.textContent = '🎵 Ativar playlist no Spotify';
+    }
+  } catch (e) {
+    showToast('❌ Sem conexão com o servidor');
+    btn.disabled = false;
+    btn.textContent = '🎵 Ativar playlist no Spotify';
+  }
+}
+
+// ── Perguntas e lógica do app ──────────────────────────────────────
+const PERGUNTAS = [
+  { id:'energia', texto:'Como está seu nível de energia agora?',  tipo:'scale',  lo:'Sem energia', hi:'Turbinado' },
+  { id:'sono',    texto:'Como foi sua noite de sono?',            tipo:'scale',  lo:'Péssima',     hi:'Ótima' },
+  { id:'foco',    texto:'Quanto consegue se concentrar?',          tipo:'scale',  lo:'Nenhum',      hi:'Total' },
+  { id:'corpo',   texto:'Como seu corpo está fisicamente?',         tipo:'scale',  lo:'Tenso/cansado', hi:'Leve/solto' },
+  { id:'social',  texto:'Vontade de interagir com pessoas?',        tipo:'scale',  lo:'Zero',        hi:'Máxima' },
+  { id:'emocao',  texto:'Qual emoção te define agora?', tipo:'emocao',
+    opcoes:[
+      {v:'feliz',i:'😊',l:'Feliz'},{v:'sereno',i:'😌',l:'Sereno'},
+      {v:'nervoso',i:'😬',l:'Nervoso'},{v:'triste',i:'😔',l:'Triste'},
+      {v:'entusiasmado',i:'🔥',l:'Entusiasmado'},{v:'neutro',i:'😐',l:'Neutro'}
+    ]
+  },
+];
+
+const MOODS = {
+  energético: { emoji:'⚡', bg:'#92400e', music:'MoodSync: Energia Total', bpm:'120–140 BPM', genres:'Pop · Funk · Eletrônico', luz:'Foco Intenso — 6500K / 100%', foco:'reuniões e tarefas complexas', dica:'Você está no pico! Enfrente aquela tarefa difícil agora.', tasks:['revisão de código','apresentações','brainstorming'], pausa:'5 min a cada 50 min', aff:'Sua energia hoje é contagiante. Use-a bem!' },
+  calmo:      { emoji:'🌊', bg:'#0e4a5a', music:'MoodSync: Fluxo Sereno',  bpm:'60–80 BPM',   genres:'Lo-fi · Jazz · Clássico', luz:'Foco Suave — 3000K / 60%',      foco:'escrita, leitura e criação',       dica:'Fluxo perfeito para criatividade profunda.',           tasks:['escrita','pesquisa','planejamento'],          pausa:'10 min a cada 90 min',  aff:'Calma é força. Você está em estado de fluxo.' },
+  ansioso:    { emoji:'🌀', bg:'#3b1a8c', music:'MoodSync: Ancoragem',      bpm:'50–70 BPM',   genres:'Ambient · Natureza',      luz:'Acolhimento — 2700K / 40%',     foco:'tarefas simples e rotineiras',     dica:'Respire. Uma tarefa de cada vez.',             tasks:['e-mails','organizar arquivos','revisões'],    pausa:'2 min a cada 25 min',   aff:'Ansiedade é energia esperando direção. Vá devagar.' },
+  triste:     { emoji:'🌧️', bg:'#1f2937', music:'MoodSync: Acolhimento',    bpm:'70–90 BPM',   genres:'Indie · Soul · Bossa Nova',luz:'Aconchego — 2200K / 50%',       foco:'tarefas leves e colaborativas',    dica:'Está tudo bem. Seja gentil consigo hoje.',     tasks:['calls com colegas','criação leve'],           pausa:'caminhada de 15 min',   aff:'Dias difíceis constroem pessoas resilientes.' },
+  focado:     { emoji:'🎯', bg:'#064e3b', music:'MoodSync: Modo Profundo',   bpm:'85–100 BPM',  genres:'Post-rock · Minimal',     luz:'Concentração — 5000K / 80%',    foco:'deep work e projetos complexos',   dica:'Estado raro! Bloqueie notificações.',           tasks:['desenvolvimento','análise','estratégia'],     pausa:'15 min a cada 2 horas', aff:'Você está no modo foco. Proteja esse estado.' },
+  animado:    { emoji:'🎉', bg:'#7c2d12', music:'MoodSync: Celebração',      bpm:'110–130 BPM', genres:'Pop · Disco · MPB',        luz:'Festa — 4000K / 90%',           foco:'colaboração e apresentações',      dica:'Sua energia é magnética! Compartilhe com a equipe.',tasks:['apresentações','networking','mentorias'],     pausa:'pausa social de 10 min',aff:'Você é a energia que o ambiente precisava hoje!' },
+};
+
+let cq = 0, answers = {};
+
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startCheckin() { cq = 0; answers = {}; renderQ(); go('checkin'); }
+
+function renderQ() {
+  const q = PERGUNTAS[cq];
+  const val = answers[q.id];
+  document.getElementById('prog').innerHTML = PERGUNTAS.map((_,i)=>`<div class="prog-dot ${i<=cq?'on':''}"></div>`).join('');
+  document.getElementById('btnBack').style.visibility = cq===0?'hidden':'visible';
+  const btn = document.getElementById('btnNext');
+  btn.textContent = cq===PERGUNTAS.length-1 ? 'Ver resultado ✨' : 'Próximo →';
+  btn.disabled = val===undefined;
+
+  let html = `<div class="q-card"><div class="q-num">Pergunta ${cq+1} de ${PERGUNTAS.length}</div><div class="q-text">${q.texto}</div>`;
+  if (q.tipo==='scale') {
+    html += `<div class="scale">${[1,2,3,4,5].map(n=>`<button class="scale-btn ${val===n?'sel':''}" onclick="pick('${q.id}',${n})">${n}</button>`).join('')}</div>
+    <div class="scale-labels"><span>${q.lo}</span><span>${q.hi}</span></div>`;
+  } else {
+    html += `<div class="emo-grid">${q.opcoes.map(o=>`<button class="emo-btn ${val===o.v?'sel':''}" onclick="pick('${q.id}','${o.v}')"><span class="ei">${o.i}</span>${o.l}</button>`).join('')}</div>`;
+  }
+  document.getElementById('qWrap').innerHTML = html + '</div>';
+}
+
+function pick(id, val) { answers[id]=val; document.getElementById('btnNext').disabled=false; renderQ(); }
+function nextQ() { if(answers[PERGUNTAS[cq].id]===undefined)return; if(cq<PERGUNTAS.length-1){cq++;renderQ();}else{mostrarResultado();} }
+function prevQ() { if(cq>0){cq--;renderQ();} }
+
+function calcMood() {
+  const s={energético:0,calmo:0,ansioso:0,triste:0,focado:0,animado:0};
+  const {energia,sono,social,foco,emocao,corpo}=answers;
+  if(energia>=4){s.energético+=3;s.animado+=2;}else if(energia===3){s.focado+=2;s.calmo+=1;}else{s.triste+=2;s.ansioso+=1;}
+  if(sono>=4){s.focado+=2;s.energético+=1;}else if(sono<=2){s.ansioso+=2;s.triste+=1;}
+  if(social>=4){s.animado+=3;s.energético+=1;}else if(social<=2){s.calmo+=2;s.triste+=1;}
+  if(foco>=4){s.focado+=3;s.calmo+=1;}else if(foco<=2){s.ansioso+=2;s.triste+=1;}
+  if(corpo<=2){s.ansioso+=1;s.triste+=1;}else if(corpo>=4){s.energético+=1;s.animado+=1;}
+  const em={feliz:{animado:3,energético:1},sereno:{calmo:3,focado:1},nervoso:{ansioso:3},triste:{triste:3},entusiasmado:{animado:2,energético:2},neutro:{calmo:1,focado:1}};
+  if(em[emocao])Object.entries(em[emocao]).forEach(([k,v])=>s[k]+=v);
+  return Object.entries(s).sort((a,b)=>b[1]-a[1])[0][0];
+}
+
+function mostrarResultado() {
+  moodAtual = calcMood();
+  const m = MOODS[moodAtual];
+  const nome = moodAtual.charAt(0).toUpperCase()+moodAtual.slice(1);
+  const hora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const btnPlay = document.getElementById('btnPlay');
+  btnPlay.disabled = false;
+  btnPlay.textContent = '🎵 Ativar playlist no Spotify';
+
+  document.getElementById('resultBody').innerHTML = `
+    <div class="hero" style="background:${m.bg}">
+      <span class="hero-tag">Seu humor agora · ${hora}</span>
+      <span class="hero-emoji">${m.emoji}</span>
+      <div class="hero-name">${nome}</div>
+      <div class="hero-aff">${m.aff}</div>
+    </div>
+    <div class="sec-label">Recomendações</div>
+    <div class="cards2">
+      <div class="card"><div class="card-icon">🎵</div><div class="card-lbl">Playlist</div><div class="card-val">${m.music}</div><div class="card-sub">${m.bpm} · ${m.genres}</div></div>
+      <div class="card"><div class="card-icon">💡</div><div class="card-lbl">Iluminação</div><div class="card-val">${m.luz}</div></div>
+    </div>
+    <div class="sec-label">Agenda inteligente</div>
+    <div class="agenda-card">
+      <div class="agenda-tip">"${m.dica}"</div>
+      <div style="font-size:13px;color:#9D9BB0;margin-bottom:8px">Foco em: <strong style="color:#F0EEF8">${m.foco}</strong></div>
+      <div class="chips">${m.tasks.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+      <div class="breaks">⏱ Pausas: ${m.pausa}</div>
+    </div>
+  `;
+  go('result');
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
